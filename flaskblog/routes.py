@@ -1,21 +1,24 @@
-from flask import render_template, url_for, flash, redirect, request, Response
-from flaskblog import app, db
+from flask import render_template, url_for, flash, redirect, request
+from flaskblog import app, db, bcrypt
 from flaskblog.forms import RegistrationForm, LoginForm
 from flaskblog.models import User, Post
+from flask_login import login_user, current_user, logout_user, login_required
+
 
 with app.app_context():
     db.create_all()
 
+
 posts = [
     {
         "author": "Corey Schafer",
-        "title": "Blog post 1",
+        "title": "Blog Post 1",
         "content": "First post content",
         "date_posted": "April 20, 2018",
     },
     {
         "author": "Jane Doe",
-        "title": "Blog post 2",
+        "title": "Blog Post 2",
         "content": "Second post content",
         "date_posted": "April 21, 2018",
     },
@@ -26,49 +29,91 @@ posts = [
 @app.route("/home")
 def home() -> str:
     """
-    Route for the home page.
+    Render the home page with posts.
 
-    :return: Rendered HTML for the home page with blog posts.
+    Returns:
+        str: Rendered HTML template with posts.
     """
-    return render_template("home.html", posts=posts, title="Home")
+    return render_template("home.html", posts=posts)
 
 
 @app.route("/about")
 def about() -> str:
     """
-    Route for the about page.
+    Render the about page.
 
-    :return: Rendered HTML for the about page.
+    Returns:
+        str: Rendered HTML template for the about page.
     """
     return render_template("about.html", title="About")
 
 
 @app.route("/register", methods=["GET", "POST"])
-def register() -> Response:
+def register() -> str:
     """
-    Route for the registration page.
+    Handle user registration.
 
-    :return: Rendered HTML for the registration page or a redirect to the home page upon successful registration.
+    Returns:
+        str: Rendered HTML template for registration page or redirects to login page upon successful registration.
     """
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash(f"Account created for {form.username.data}!", "success")
-        return redirect(url_for("home"))
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
+            "utf-8"
+        )
+        user = User(
+            username=form.username.data, email=form.email.data, password=hashed_password
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash("Your account has been created! You are now able to log in", "success")
+        return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])
-def login() -> Response:
+def login() -> str:
     """
-    Route for the login page.
+    Handle user login.
 
-    :return: Rendered HTML for the login page or a redirect to the home page upon successful login.
+    Returns:
+        str: Rendered HTML template for login page or redirects to home page upon successful login.
     """
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == "admin@blog.com" and form.password.data == "password":
-            flash("You have been logged in!", "success")
-            return redirect(url_for("home"))
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            next_page = request.args.get("next")
+            return redirect(next_page) if next_page else redirect(url_for("home"))
         else:
-            flash("Login Unsuccessful. Please check username and password", "danger")
+            flash("Login Unsuccessful. Please check email and password", "danger")
     return render_template("login.html", title="Login", form=form)
+
+
+@app.route("/logout")
+def logout() -> str:
+    """
+    Handle user logout.
+
+    Returns:
+        str: Redirects to home page after logging out.
+    """
+    logout_user()
+    return redirect(url_for("home"))
+
+
+@app.route("/account")
+@login_required
+def account() -> str:
+    """
+    Render the account page, requires login.
+
+    Returns:
+        str: Rendered HTML template for the account page.
+    """
+    return render_template("account.html", title="Account")
