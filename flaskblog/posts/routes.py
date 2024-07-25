@@ -25,7 +25,7 @@ def new_post():
 @posts.route("/post/<int:post_id>")
 def post(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", title=post.title, post=post)
+    return render_template("posts/post.html", title=post.title, post=post)
 
 
 @posts.route("/post/<int:post_id>/update", methods=["GET", "POST"])
