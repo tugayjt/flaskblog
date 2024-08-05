@@ -1,9 +1,11 @@
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from datetime import datetime
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired as Serializer
 from flask import current_app
 from flaskblog import db, login_manager
 from flask_login import UserMixin
 from flaskblog.common.mixins import ModelMixin
 
+from flaskblog.posts.models import Post
 
 
 
@@ -35,5 +37,3 @@ class User(db.Model, UserMixin, ModelMixin):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
-
-

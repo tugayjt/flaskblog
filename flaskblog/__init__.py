@@ -14,8 +14,6 @@ login_manager.login_message_category = "info"
 mail = Mail()
 
 
-
-
 def create_app(config_class=Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -25,17 +23,22 @@ def create_app(config_class=Config) -> Flask:
     login_manager.init_app(app)
     mail.init_app(app)
 
-    with app.app_context():
-        db.create_all()
-
+    
     from flaskblog.users.routes import users
     from flaskblog.posts.routes import posts
     from flaskblog.main.routes import main
     from flaskblog.errors.handlers import errors
+    
 
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
     app.register_blueprint(errors)
+    
+    from flaskblog.posts.models import Post
+    from flaskblog.users.models import User
+    
+    with app.app_context():
+        db.create_all()
 
     return app
