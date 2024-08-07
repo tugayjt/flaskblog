@@ -8,7 +8,6 @@ from flaskblog.common.mixins import ModelMixin
 from flaskblog.posts.models import Post
 
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

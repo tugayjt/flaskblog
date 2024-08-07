@@ -1,0 +1,92 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Posts</h1>
+    <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addPostModal">
+        Add Post
+    </button>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Title</th>
+                <th scope="col">Content</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.content }}</td>
+                <td>
+                    <a href="#" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
+                    <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            <!-- Add more post rows as needed -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Post Modal -->
+<div class="modal fade" id="addPostModal" tabindex="-1" role="dialog" aria-labelledby="addPostModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPostModalLabel">Add Post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addPostForm">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('addPostForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Gather form data
+            var formData = new FormData(this);
+
+            // Send Fetch request
+            fetch('/admin/posts', { // Change this URL to your endpoint
+                method: 'POST',
+                body: formData,
+            })
+                .then(data => {
+                    // Handle success
+                    $('#addPostModal').modal('hide');
+                    // Optionally, refresh the post list here
+                })
+                .catch(error => {
+                    alert('An error occurred: ' + error);
+                });
+        });
+    });
+</script>
+
+{% endblock %}

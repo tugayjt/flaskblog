@@ -4,7 +4,7 @@ from flaskblog import db
 from flaskblog.posts.models import Post
 from flaskblog.posts.forms import PostForm
 
-posts = Blueprint("posts", __name__)
+posts = Blueprint("posts", __name__, url_prefix = "/posts")
 
 
 @posts.route("/post/new", methods=["GET", "POST"])
