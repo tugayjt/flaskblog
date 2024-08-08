@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flaskblog import db
 from flaskblog.users.models import User
-from flaskblog.users.models import Post
+from flaskblog.posts.models import Post
 
 admin = Blueprint('admin', __name__, url_prefix="/admin")
 
@@ -16,21 +16,6 @@ def list_or_create_users():
         return redirect(url_for('admin.list_or_create_users'))
     users = User.query.all()
     return render_template('admin/users.html', users=users)
-
-
-
-@admin.route("/posts/", methods = ["GET","POST"])
-def list_or_create_posts():
-    if request.method == 'POST':
-        # Handle the creation of a new user
-        title = request.form['title']
-        content = request.form['content']
-        new_post = Post(title=title, content=content)
-        new_post.save_to_db()
-        return redirect(url_for('admin.list_or_create_posts'))
-    posts = Post.query.all()
-    return render_template('admin/posts.html', posts=posts)
-
 
 @admin.route("/users/update/<int:user_id>",methods=["GET","PUT"])
 def  update_user(user_id):
@@ -47,4 +32,34 @@ def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     user.save_to_db()
     return render_template("admin/users.html")
+ 
+ 
+ 
+@admin.route("/posts/", methods = ["GET","POST"])
+def list_or_create_posts():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        new_post = Post(title=title, content=content)
+        new_post.save_to_db()
+        return redirect(url_for('admin.list_or_create_posts'))
+    posts = Post.query.all()
+    return render_template('admin/posts.html', posts=posts)
+ 
+ 
+ 
+@admin.route("/posts/update/<int:post_id>",methods=["PUT"])
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if request.method == "PUT":
+        post.title = request.form["title"]
+        post.content = request.form['content']
+        post.save_to_db()
+    return render_template("admin/post.html")
 
+
+@admin.route("/posts/delete/<int:post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    post = User.query.get_or_404(post_id)
+    post.save_to_db()   
+    return render_template("admin/posts.html")
