@@ -1,65 +1,62 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flaskblog import db
+from flask import Blueprint, render_template, request, redirect, url_for
+from flaskblog.common.utils import handle_hashed_password_generate
 from flaskblog.users.models import User
 from flaskblog.posts.models import Post
+from flask_login import current_user
 
 admin = Blueprint('admin', __name__, url_prefix="/admin")
 
-@admin.route("/users/", methods = ["GET","POST"])
+@admin.route("/users/", methods=["GET", "POST"])
 def list_or_create_users():
     if request.method == 'POST':
-        # Handle the creation of a new user
-        name = request.form['name']
+        name = request.form['username']
         email = request.form['email']
-        new_user = User(name=name, email=email)
+        password = handle_hashed_password_generate(request.form['password'])
+        new_user = User(username=name, email=email, password=password)
         new_user.save_to_db()
         return redirect(url_for('admin.list_or_create_users'))
     users = User.query.all()
     return render_template('admin/users.html', users=users)
 
-@admin.route("/users/update/<int:user_id>",methods=["GET","PUT"])
-def  update_user(user_id):
-    user = User.query.get_or_404(user_id)
+@admin.route("/users/update/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
     if request.method == "PUT":
+        user = User.query.get_or_404(user_id)
         user.username = request.form["username"]
         user.email = request.form['email']
-        user.save_to_db()
-    return render_template("admin/users.html")
-
+        user.update_db()
+        return redirect(url_for('admin.list_or_create_users'))
+    return render_template("admin/update_user.html")
 
 @admin.route("/users/delete/<int:user_id>", methods=["DELETE"])
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
-    user.save_to_db()
-    return render_template("admin/users.html")
- 
- 
- 
-@admin.route("/posts/", methods = ["GET","POST"])
+    user.delete_from_db()
+    return redirect(url_for('admin.list_or_create_users'))
+
+@admin.route("/posts/", methods=["GET", "POST"])
 def list_or_create_posts():
     if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-        new_post = Post(title=title, content=content)
+        title = request.form["title"]
+        content = request.form["content"]
+        new_post = Post(title=title, content=content, author=current_user)
         new_post.save_to_db()
         return redirect(url_for('admin.list_or_create_posts'))
     posts = Post.query.all()
     return render_template('admin/posts.html', posts=posts)
- 
- 
- 
-@admin.route("/posts/update/<int:post_id>",methods=["PUT"])
+
+@admin.route("/posts/update/<int:post_id>", methods=["PUT"])
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
-    if request.method == "PUT":
+    if request.method == "POST":
         post.title = request.form["title"]
         post.content = request.form['content']
-        post.save_to_db()
-    return render_template("admin/post.html")
-
+        post.update_db()
+        return redirect(url_for('admin.list_or_create_posts'))
+    return render_template("admin/update_post.html", post=post)
 
 @admin.route("/posts/delete/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
-    post = User.query.get_or_404(post_id)
-    post.save_to_db()   
-    return render_template("admin/posts.html")
+    post = Post.query.get_or_404(post_id)
+    post.delete_from_db()
+    return redirect(url_for('admin.list_or_create_posts'))

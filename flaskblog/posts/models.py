@@ -1,7 +1,6 @@
 from flaskblog.common.mixins import ModelMixin
 from flaskblog import db
 from datetime import datetime
-from flaskblog import db
 
 class Post(db.Model, ModelMixin):
 

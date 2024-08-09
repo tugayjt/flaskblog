@@ -1,11 +1,10 @@
-from datetime import datetime
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired as Serializer
+from itsdangerous import SignatureExpired as Serializer
 from flask import current_app
 from flaskblog import db, login_manager
 from flask_login import UserMixin
 from flaskblog.common.mixins import ModelMixin
 
-from flaskblog.posts.models import Post
+from flaskblog.posts.models import Post  # noqa
 
 
 @login_manager.user_loader
@@ -17,19 +16,19 @@ class User(db.Model, UserMixin, ModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
-    posts = db.relationship('Post', backref='author', lazy=True)
+    posts = db.relationship("Post", backref="author", cascade="all,delete", lazy=True)
 
     def get_reset_token(self, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+        s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
+        return s.dumps({"user_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_reset_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
+        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            user_id = s.loads(token)['user_id']
+            user_id = s.loads(token)["user_id"]
         except:
             return None
         return User.query.get(user_id)
