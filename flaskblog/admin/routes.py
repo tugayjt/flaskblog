@@ -54,7 +54,7 @@ def list_or_create_posts():
 @admin.route("/posts/update/<int:post_id>", methods=["PUT"])
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
-    if request.method == "POST":
+    if request.method == "PUT":
         post.title = request.form["title"]
         post.content = request.form['content']
         post.update_db()
