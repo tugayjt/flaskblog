@@ -31,7 +31,7 @@ def create_app(config_class=Config) -> Flask:
     from flaskblog.posts.routes import posts
     from flaskblog.main.routes import main
     from flaskblog.errors.handlers import errors
-    from flaskblog.admin.routes import admin # Import the admin blueprint
+    from flaskblog.admin import admin # Import the admin blueprint
 
     app.register_blueprint(users)
     app.register_blueprint(posts)
@@ -39,8 +39,8 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(errors)
     app.register_blueprint(admin)  # Register the admin blueprint
 
-    from flaskblog.posts.models import Post
-    from flaskblog.users.models import User
+    from flaskblog.posts.models import Post # noqa
+    from flaskblog.users.models import User # noqa
 
     with app.app_context():
         db.create_all()

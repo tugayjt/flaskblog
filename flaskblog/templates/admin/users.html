@@ -120,6 +120,8 @@
     </div>
 </div>
 
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Handle Add User form submission
@@ -132,13 +134,11 @@
                 method: 'POST',
                 body: formData,
             })
-                
+                .then(response => response.json())
                 .then(data => {
-                    
-                        alert("User succesfuly added");
-                        $('#addUserModal').modal('hide');
-                        location.reload(); // Refresh the page to reflect changes
-                    
+                    alert("User successfully added");
+                    $('#addUserModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -156,13 +156,11 @@
                 method: 'PUT',
                 body: formData,
             })
-
+                .then(response => response.json())
                 .then(data => {
-                    
-                        alert("User succesfuly edited");
-                        $('#editUserModal').modal('hide');
-                        location.reload(); // Refresh the page to reflect changes
-                    
+                    alert("User successfully edited");
+                    $('#editUserModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -176,12 +174,11 @@
             fetch('/admin/users/delete/' + userId, {
                 method: 'DELETE',
             })
+                .then(response => response.json())
                 .then(data => {
-
                     alert("User successfully deleted");
                     $('#deleteUserModal').modal('hide');
                     location.reload(); // Refresh the page to reflect changes
-
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -214,13 +211,14 @@
         function removeModalBackdrops() {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open');
+       
         }
 
-        // Clean up backdrops when modals are hidden
-        $('.modal').on('hidden.bs.modal', function () {
-            removeModalBackdrops();
-        });
-    });
+// Clean up backdrops when modals are hidden
+$('.modal').on('hidden.bs.modal', function () {
+    removeModalBackdrops();
+});
+});
 </script>
 
 {% endblock %}
