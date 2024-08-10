@@ -73,6 +73,11 @@
     </div>
 </div>
 
+<!-- Edit Icon -->
+<button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPostModal" onclick="populateEditForm(postId)">
+    <i class="fas fa-edit"></i> Edit
+</button>
+
 <!-- Edit Post Modal -->
 <div class="modal fade" id="editPostModal" tabindex="-1" role="dialog" aria-labelledby="editPostModalLabel"
     aria-hidden="true">
@@ -109,6 +114,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Delete Post Modal -->
 <div class="modal fade" id="deletePostModal" tabindex="-1" role="dialog" aria-labelledby="deletePostModalLabel"
