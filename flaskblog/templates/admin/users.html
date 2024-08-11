@@ -120,13 +120,11 @@
     </div>
 </div>
 
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Handle Add User form submission
         document.getElementById('addUserForm').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the default form submission
+            event.preventDefault();
 
             var formData = new FormData(this);
 
@@ -134,11 +132,10 @@
                 method: 'POST',
                 body: formData,
             })
-                .then(response => response.json())
                 .then(data => {
                     alert("User successfully added");
                     $('#addUserModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
+                    location.reload();
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -147,7 +144,7 @@
 
         // Handle Edit User form submission
         document.getElementById('editUserForm').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the default form submission
+            event.preventDefault();
 
             var formData = new FormData(this);
             var userId = document.getElementById('editUserId').value;
@@ -156,11 +153,10 @@
                 method: 'PUT',
                 body: formData,
             })
-                .then(response => response.json())
                 .then(data => {
-                    alert("User successfully edited");
+                    alert("User successfully updated");
                     $('#editUserModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
+                    location.reload();
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -174,11 +170,10 @@
             fetch('/admin/users/delete/' + userId, {
                 method: 'DELETE',
             })
-                .then(response => response.json())
                 .then(data => {
                     alert("User successfully deleted");
                     $('#deleteUserModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
+                    location.reload();
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -187,7 +182,7 @@
 
         // Populate Edit User Modal with data
         $('#editUserModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
+            var button = $(event.relatedTarget);
             var userId = button.data('id');
             var username = button.data('username');
             var email = button.data('email');
@@ -200,25 +195,24 @@
 
         // Populate Delete User Modal with data
         $('#deleteUserModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
+            var button = $(event.relatedTarget);
             var userId = button.data('id');
 
             var modal = $(this);
             modal.find('#deleteUserId').val(userId);
         });
 
-        // Function to remove remaining modal backdrops
+        // Remove remaining modal backdrops
         function removeModalBackdrops() {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open');
-       
         }
 
-// Clean up backdrops when modals are hidden
-$('.modal').on('hidden.bs.modal', function () {
-    removeModalBackdrops();
-});
-});
+        // Clean up backdrops when modals are hidden
+        $('.modal').on('hidden.bs.modal', function () {
+            removeModalBackdrops();
+        });
+    });
 </script>
 
 {% endblock %}
