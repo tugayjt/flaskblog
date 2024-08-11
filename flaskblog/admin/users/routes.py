@@ -24,11 +24,11 @@ def list_or_create_users():
     return render_template("admin/users.html", users=users_list)
 
 
-@users.route("/update/<int:user_id>", methods=["GET", "POST"])
+@users.route("/update/<int:user_id>", methods=["PUT"])
 @admin_required
 def update_user(user_id):
     user = User.query.get_or_404(user_id)
-    if request.method == "POST":
+    if request.method == "PUT":
         user.username = request.form["username"]
         user.email = request.form["email"]
         user.update_db()
@@ -36,7 +36,7 @@ def update_user(user_id):
     return render_template("admin/update_user.html", user=user)
 
 
-@users.route("/delete/<int:user_id>", methods=["POST"])
+@users.route("/delete/<int:user_id>", methods=["DELETE"])
 @admin_required
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
