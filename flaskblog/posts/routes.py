@@ -18,7 +18,7 @@ def new_post():
         flash("Your post has been created!", "success")
         return redirect(url_for("main.home"))
     return render_template(
-        "post.html", title="New Post", form=form, legend="New Post"
+        "create_post.html", title="New Post", form=form, legend="New Post"
     )
 
 
@@ -38,7 +38,7 @@ def update_post(post_id):
     if form.validate_on_submit():
         post.title = form.title.data
         post.content = form.content.data
-        db.session.commit()
+        post.update_db()
         flash("Your post has been updated!", "success")
         return redirect(url_for("posts.post", post_id=post.id))
     elif request.method == "GET":

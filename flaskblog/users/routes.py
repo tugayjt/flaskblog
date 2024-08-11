@@ -85,7 +85,7 @@ def user_posts(username):
         .order_by(Post.date_posted.desc())
         .paginate(page=page, per_page=5)
     )
-    return render_template("user_posts.html", posts=posts, user=user)
+    return render_template("users/user_posts.html", posts=posts, user=user)
 
 
 @users.route("/reset_password", methods=["GET", "POST"])
@@ -101,7 +101,7 @@ def reset_request():
             "An email has been sent with instructions to reset your password.", "info"
             )
             return redirect(url_for("users.login"))
-        return redirect(url_for("users. reset_request"))
+        return redirect(url_for("users.reset_request"))
     
     return render_template("users/reset_request.html", title="Reset Password", form=form)
 

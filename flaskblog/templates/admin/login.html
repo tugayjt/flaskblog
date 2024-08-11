@@ -1,19 +1,24 @@
 <!-- Login Form -->
-<div class="container mt-4">
-    <h2>Login</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.email.label(class="form-control-label") }}
-            {{ form.email(class="form-control form-control-lg") }}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg" style="width: 25rem;">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">Login</h3>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-group mb-3">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control form-control-lg") }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control form-control-lg") }}
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
+            </form>
         </div>
-        <div class="form-group">
-            {{ form.password.label(class="form-control-label") }}
-            {{ form.password(class="form-control form-control-lg") }}
-        </div>
-        <div class="form-group">
-            {{ form.remember(class="form-check-input") }} {{ form.remember.label(class="form-check-label") }}
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-    </form>
+    </div>
 </div>
