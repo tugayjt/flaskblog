@@ -145,7 +145,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                <button type="submit" class="btn btn-danger" id="confirmDelete">Delete</button>
             </div>
         </div>
     </div>
@@ -154,25 +154,35 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Handle Add User form submission
-        document.getElementById('addUserForm').addEventListener('submit', function (event) {
-            event.preventDefault();
+
+        document.getElementById('addUserForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
 
             var formData = new FormData(this);
 
-            fetch('/admin/users', {
-                method: 'POST',
-                body: formData,
-            })
-                .then(data => {
-                    alert("User successfully added");
-                    $('#addUserModal').modal('hide');
-                    location.reload();
-                })
-                .catch(error => {
-                    alert('An error occurred: ' + error);
+            try {
+                const response = await fetch('/admin/users', {
+                    method: 'POST',
+                    body: formData,
                 });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+
+                    $('#addUserModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                alert('An error occurred: ' + error.message);
+            }
         });
+
+
+
 
         // Handle Edit User form submission
         document.getElementById('editUserForm').addEventListener('submit', function (event) {
@@ -196,21 +206,34 @@
         });
 
         // Handle Delete User confirmation
-        document.getElementById('confirmDelete').addEventListener('click', function () {
+
+        document.getElementById('confirmDelete').addEventListener('click', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
             var userId = document.getElementById('deleteUserId').value;
 
-            fetch('/admin/users/delete/' + userId, {
-                method: 'DELETE',
-            })
-                .then(data => {
-                    alert("User successfully deleted");
-                    $('#deleteUserModal').modal('hide');
-                    location.reload();
-                })
-                .catch(error => {
-                    alert('An error occurred: ' + error);
+            try {
+                const response = await fetch('/admin/users/delete/' + userId, {
+                    method: 'DELETE'
                 });
+                if (response.ok) {
+                    const data = await response.json();
+                    
+
+                    alert(data.message);
+
+                    $('#deleteUserModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                alert('An error occurred: ' + error.message);
+            }
         });
+
+
 
         // Populate Edit User Modal with data
         $('#editUserModal').on('show.bs.modal', function (event) {

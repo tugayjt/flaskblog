@@ -74,7 +74,8 @@
 </div>
 
 <!-- Edit Icon -->
-<button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPostModal" onclick="populateEditForm(postId)">
+<button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPostModal"
+    onclick="populateEditForm(postId)">
     <i class="fas fa-edit"></i> Edit
 </button>
 
@@ -90,7 +91,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="editPostForm">
+                <form id="editPostForm" enctype="multipart/form-data" method="PUT">
                     <input type="hidden" id="editPostId" name="id">
                     <div class="form-group">
                         <label for="editTitle">Title</label>
@@ -151,14 +152,14 @@
                 method: 'POST',
                 body: formData,
             })
-                
+
                 .then(data => {
-                
-                        
-                        alert("Post successfuly added");
-                        $('#addPostModal').modal('hide');
-                        location.reload(); // Refresh the page to reflect changes
-                    
+
+
+                    alert("Post successfuly added");
+                    $('#addPostModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -166,28 +167,33 @@
         });
 
         // Handle Edit Post form submission
-        document.getElementById('editPostForm').addEventListener('submit', function (event) {
+        document.getElementById('editPostForm').addEventListener('submit', async function (event) {
             event.preventDefault(); // Prevent the default form submission
 
             var formData = new FormData(this);
             var postId = document.getElementById('editPostId').value;
 
-            fetch('/admin/posts/update/' + postId, {
-                method: 'PUT',
-                body: formData,
-            })
-                
-                .then(data => {
-                    
-                        alert("Post successfuly updated");
-                        $('#editPostModal').modal('hide');
-                        location.reload(); // Refresh the page to reflect changes
-                    
-                })
-                .catch(error => {
-                    alert('An error occurred: ' + error);
+            try {
+                const response = await fetch('/admin/posts/update/' + postId, {
+                    method: 'PUT',
+                    body: formData,
                 });
+
+                if (response.ok) {
+
+                    const data = await response.json();
+                    alert(data.message);
+                    $('#editPostModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                alert('An error occurred: ' + error.message);
+            }
         });
+
 
         // Handle Delete Post confirmation
         document.getElementById('confirmDelete').addEventListener('click', function () {
@@ -196,13 +202,13 @@
             fetch('/admin/posts/delete/' + postId, {
                 method: 'DELETE',
             })
-                
+
                 .then(data => {
-                    
-                        alert("Post successfuly deleted");
-                        $('#deletePostModal').modal('hide');
-                        location.reload(); // Refresh the page to reflect changes
-                    
+                    console.log("data:", data)
+                    alert();
+                    $('#deletePostModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+
                 })
                 .catch(error => {
                     alert('An error occurred: ' + error);
@@ -235,7 +241,7 @@
             modal.find('#deletePostId').val(postId);
         });
 
-       
+
         // Function to remove remaining modal backdrops
         function removeModalBackdrops() {
             $('.modal-backdrop').remove();

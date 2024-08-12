@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flaskblog.posts.models import Post
 from flask_login import current_user
 from flaskblog.common.utils import admin_required, save_picture
@@ -21,26 +21,30 @@ def list_or_create_posts():
             picture_file = save_picture(image, "posts/media")
             new_post.image_file = picture_file
         new_post.save_to_db()
-        return redirect(url_for("posts.list_or_create_posts"))
+        return redirect(url_for("admin.posts.list_or_create_posts"))
     posts_list = Post.query.all()
     return render_template("admin/posts.html", posts=posts_list)
 
 
-@posts.route("/update/<int:post_id>", methods=["GET", "PUT"])
+@posts.route("/update/<int:post_id>", methods=["PUT"])
 @admin_required
 def update_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if request.method == "PUT":
+    try:
+        post = Post.query.get_or_404(post_id)
         post.title = request.form["title"]
         post.content = request.form["content"]
         post.update_db()
-        return redirect(url_for("posts.list_or_create_posts"))
-    return render_template("admin/update_post.html", post=post)
+        return jsonify({"message": "Post updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
 
 
 @posts.route("/delete/<int:post_id>", methods=["DELETE"])
 @admin_required
 def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    post.delete_from_db()
-    return redirect(url_for("posts.list_or_create_posts"))
+    try:
+        post = Post.query.get_or_404(post_id)
+        post.delete_from_db()
+        return jsonify({"message": "Post deleted successfully"}), 204
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500

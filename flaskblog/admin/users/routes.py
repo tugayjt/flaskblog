@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_bcrypt import Bcrypt
 from flaskblog.common.utils import admin_required, handle_hashed_password_generate
 from flaskblog.users.models import User
@@ -24,11 +24,11 @@ def list_or_create_users():
     return render_template("admin/users.html", users=users_list)
 
 
-@users.route("/update/<int:user_id>", methods=["PUT"])
+@users.route("/update/<int:user_id>", methods=["GET", "POST"])
 @admin_required
 def update_user(user_id):
     user = User.query.get_or_404(user_id)
-    if request.method == "PUT":
+    if request.method == "POST":
         user.username = request.form["username"]
         user.email = request.form["email"]
         user.update_db()
@@ -39,9 +39,12 @@ def update_user(user_id):
 @users.route("/delete/<int:user_id>", methods=["DELETE"])
 @admin_required
 def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
-    user.delete_from_db()
-    return redirect(url_for("users.list_or_create_users"))
+    try:
+        user = User.query.get_or_404(user_id)
+        # user.delete_from_db()
+        return jsonify({"message": "User was deleted successfully"}), 204
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
 
 
 @users.route("/login", methods=["GET", "POST"])
