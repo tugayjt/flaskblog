@@ -1,8 +1,36 @@
 {% extends 'admin/base.html' %}
 {% block content %}
 
+<style>
+    body.morning-mode {
+        background-color: #ffffff;
+        color: darkblue;
+    }
+
+    body.night-mode {
+        background-color: black;
+        color: #ecf0f1;
+    }
+
+    .night-mode .table {
+        background-color: black;
+        color: #ecf0f1;
+    }
+
+    .night-mode .modal-content {
+        background-color: black;
+        color: red;
+    }
+
+    .night-mode .btn {
+        background-color: green;
+        color: #ffffff;
+    }
+</style>
+
 <div class="container mt-4">
     <h1 class="mb-4">Posts</h1>
+    <button id="toggleMode" class="btn btn-dark mb-3">Switch to Night Mode</button>
     <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addPostModal">
         Add Post
     </button>
@@ -12,7 +40,8 @@
             <tr>
                 <th scope="col">ID</th>
                 <th scope="col">Title</th>
-                <th scope="col">Content</th>
+                <th scope="col">Short Description</th>
+                <th scope="col">Author</th>
                 <th scope="col">Actions</th>
             </tr>
         </thead>
@@ -21,15 +50,17 @@
             <tr>
                 <td>{{ post.id }}</td>
                 <td>{{ post.title }}</td>
-                <td>{{ post.content }}</td>
+                <td>{{ post.short_desc }}</td>
+                <td>{{ post.author.username }}</td>
                 <td>
                     <a href="#" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPostModal"
-                        data-id="{{ post.id }}" data-title="{{ post.title }}" data-content="{{ post.content }}"
-                        data-short_desc="{{ post.short_desc }}" data-image="{{ post.image }}">
-                        <i class="fas fa-edit"></i></a>
+                        data-id="{{ post.id }}" data-title="{{ post.title }}" data-short_desc="{{ post.short_desc }}" data-content="{{ post.content }}">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
                     <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal"
                         data-id="{{ post.id }}">
-                        <i class="fas fa-trash-alt"></i></a>
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -55,16 +86,12 @@
                         <input type="text" class="form-control" id="title" name="title" required>
                     </div>
                     <div class="form-group">
-                        <label for="content">Content</label>
-                        <textarea class="form-control" id="content" name="content" required></textarea>
-                    </div>
-                    <div class="form-group">
                         <label for="short_desc">Short Description</label>
                         <input type="text" class="form-control" id="short_desc" name="short_desc" required>
                     </div>
                     <div class="form-group">
-                        <label for="image">Image</label>
-                        <input type="file" class="form-control" id="image" name="image" required>
+                        <label for="content">Content</label>
+                        <textarea class="form-control" id="content" name="content" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Post</button>
                 </form>
@@ -72,12 +99,6 @@
         </div>
     </div>
 </div>
-
-<!-- Edit Icon -->
-<button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPostModal"
-    onclick="populateEditForm(postId)">
-    <i class="fas fa-edit"></i> Edit
-</button>
 
 <!-- Edit Post Modal -->
 <div class="modal fade" id="editPostModal" tabindex="-1" role="dialog" aria-labelledby="editPostModalLabel"
@@ -91,23 +112,19 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="editPostForm" enctype="multipart/form-data" method="PUT">
+                <form id="editPostForm">
                     <input type="hidden" id="editPostId" name="id">
                     <div class="form-group">
                         <label for="editTitle">Title</label>
                         <input type="text" class="form-control" id="editTitle" name="title" required>
                     </div>
                     <div class="form-group">
-                        <label for="editContent">Content</label>
-                        <textarea class="form-control" id="editContent" name="content" required></textarea>
-                    </div>
-                    <div class="form-group">
                         <label for="editShortDesc">Short Description</label>
                         <input type="text" class="form-control" id="editShortDesc" name="short_desc" required>
                     </div>
                     <div class="form-group">
-                        <label for="editImage">Image</label>
-                        <input type="file" class="form-control" id="editImage" name="image" required>
+                        <label for="editContent">Content</label>
+                        <textarea class="form-control" id="editContent" name="content" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Update Post</button>
                 </form>
@@ -115,7 +132,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Delete Post Modal -->
 <div class="modal fade" id="deletePostModal" tabindex="-1" role="dialog" aria-labelledby="deletePostModalLabel"
@@ -134,7 +150,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                <button type="submit" class="btn btn-danger" id="confirmDelete">Delete</button>
             </div>
         </div>
     </div>
@@ -142,47 +158,67 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
         // Handle Add Post form submission
-        document.getElementById('addPostForm').addEventListener('submit', function (event) {
+        document.getElementById('addPostForm').addEventListener('submit', async function (event) {
             event.preventDefault(); // Prevent the default form submission
 
             var formData = new FormData(this);
 
-            fetch('/admin/posts', {
-                method: 'POST',
-                body: formData,
-            })
+            try {
+                const response = await fetch('/admin/posts', {
+                    method: 'POST',
+                    body: formData,
+                });
 
-                .then(data => {
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
 
-
-                    alert("Post successfuly added");
                     $('#addPostModal').modal('hide');
                     location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add the post.');
+            }
+        });
 
-                })
-                .catch(error => {
-                    alert('An error occurred: ' + error);
-                });
+        // Handle Edit button click (populate modal with post data)
+        $('#editPostModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var postId = button.data('id');
+            var postTitle = button.data('title');
+            var postShortDesc = button.data('short_desc');
+            var postContent = button.data('content');
+
+            var modal = $(this);
+            modal.find('#editPostId').val(postId);
+            modal.find('#editTitle').val(postTitle);
+            modal.find('#editShortDesc').val(postShortDesc);
+            modal.find('#editContent').val(postContent);
         });
 
         // Handle Edit Post form submission
         document.getElementById('editPostForm').addEventListener('submit', async function (event) {
             event.preventDefault(); // Prevent the default form submission
 
-            var formData = new FormData(this);
             var postId = document.getElementById('editPostId').value;
+            var formData = new FormData(this);
 
             try {
-                const response = await fetch('/admin/posts/update/' + postId, {
+                const response = await fetch(`/admin/posts/update/${postId}`, {
                     method: 'PUT',
                     body: formData,
                 });
 
                 if (response.ok) {
-
                     const data = await response.json();
                     alert(data.message);
+
                     $('#editPostModal').modal('hide');
                     location.reload(); // Refresh the page to reflect changes
                 } else {
@@ -190,49 +226,12 @@
                     throw new Error(errorText);
                 }
             } catch (error) {
-                alert('An error occurred: ' + error.message);
+                console.error('Error:', error);
+                alert('Failed to update the post.');
             }
         });
 
-
-        // Handle Delete Post confirmation
-        document.getElementById('confirmDelete').addEventListener('click', function () {
-            var postId = document.getElementById('deletePostId').value;
-
-            fetch('/admin/posts/delete/' + postId, {
-                method: 'DELETE',
-            })
-
-                .then(data => {
-                    console.log("data:", data)
-                    alert();
-                    $('#deletePostModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
-
-                })
-                .catch(error => {
-                    alert('An error occurred: ' + error);
-                });
-        });
-
-        // Populate Edit Post Modal with data
-        $('#editPostModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var postId = button.data('id');
-            var title = button.data('title');
-            var content = button.data('content');
-            var shortDesc = button.data('short_desc');
-            var image = button.data('image');
-
-            var modal = $(this);
-            modal.find('#editPostId').val(postId);
-            modal.find('#editTitle').val(title);
-            modal.find('#editContent').val(content);
-            modal.find('#editShortDesc').val(shortDesc);
-            modal.find('#editImage').val(image);
-        });
-
-        // Populate Delete Post Modal with data
+        // Handle Delete button click (populate modal with post ID)
         $('#deletePostModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget); // Button that triggered the modal
             var postId = button.data('id');
@@ -241,18 +240,45 @@
             modal.find('#deletePostId').val(postId);
         });
 
+        // Handle Delete confirmation button click
+        document.getElementById('confirmDelete').addEventListener('click', async function () {
+            var postId = document.getElementById('deletePostId').value;
 
-        // Function to remove remaining modal backdrops
-        function removeModalBackdrops() {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open');
-        }
+            try {
+                const response = await fetch(`/admin/posts/delete/${postId}`, {
+                    method: 'DELETE',
+                });
 
-        // Clean up backdrops when modals are hidden
-        $('.modal').on('hidden.bs.modal', function () {
-            removeModalBackdrops();
+                if (response.ok) {
+                    alert('Post deleted successfully');
+                    $('#deletePostModal').modal('hide');
+                    location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete the post.');
+            }
+        });
+
+        // Handle Night/Morning mode toggle
+        const toggleModeButton = document.getElementById('toggleMode');
+        toggleModeButton.addEventListener('click', function () {
+            const bodyElement = document.body;
+            if (bodyElement.classList.contains('night-mode')) {
+                bodyElement.classList.remove('night-mode');
+                bodyElement.classList.add('morning-mode');
+                toggleModeButton.textContent = 'Switch to Night Mode';
+            } else {
+                bodyElement.classList.remove('morning-mode');
+                bodyElement.classList.add('night-mode');
+                toggleModeButton.textContent = 'Switch to Morning Mode';
+            }
         });
     });
 </script>
 
 {% endblock %}
+    

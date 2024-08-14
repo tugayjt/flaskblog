@@ -155,36 +155,27 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        document.getElementById('addUserForm').addEventListener('submit', async function (event) {
+        document.getElementById('addUserForm').addEventListener('submit', function () {
             event.preventDefault(); // Prevent the default form submission
 
             var formData = new FormData(this);
+            var userId = document.getElementById('addUserId').value;
 
-            try {
-                const response = await fetch('/admin/users', {
-                    method: 'POST',
-                    body: formData,
+            fetch('/admin/users/added/' + userId, {
+                method: 'POST',
+                body: formData,
+            })
+                .then(data => {
+                    alert("User successfully added");
+                    $('#addedUserModal').modal('hide');
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('An error occurred: ' + error);
                 });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    alert(data.message);
-
-                    $('#addUserModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
-                } else {
-                    const errorText = await response.text();
-                    throw new Error(errorText);
-                }
-            } catch (error) {
-                alert('An error occurred: ' + error.message);
-            }
         });
 
-
-
-
-        // Handle Edit User form submission
+        
         document.getElementById('editUserForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
@@ -207,31 +198,24 @@
 
         // Handle Delete User confirmation
 
-        document.getElementById('confirmDelete').addEventListener('click', async function (event) {
+        document.getElementById('confirmDelete').addEventListener('click', function (event) {
             event.preventDefault(); // Prevent the default form submission
 
             var userId = document.getElementById('deleteUserId').value;
 
-            try {
-                const response = await fetch('/admin/users/delete/' + userId, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    
-
-                    alert(data.message);
-
+            fetch('/admin/users/delete/' + userId, {
+                method: 'DELETE'
+            })
+                .then(data => {
+                    alert("User successfully deleted");
                     $('#deleteUserModal').modal('hide');
-                    location.reload(); // Refresh the page to reflect changes
-                } else {
-                    const errorText = await response.text();
-                    throw new Error(errorText);
-                }
-            } catch (error) {
-                alert('An error occurred: ' + error.message);
-            }
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('An error occurred: ' + error);
+                });
         });
+            
 
 
 

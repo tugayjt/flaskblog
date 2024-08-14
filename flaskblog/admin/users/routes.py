@@ -13,26 +13,34 @@ bcrypt = Bcrypt()
 @users.route("/", methods=["GET", "POST"])
 @admin_required
 def list_or_create_users():
-    if request.method == "POST":
-        name = request.form["username"]
-        email = request.form["email"]
-        password = handle_hashed_password_generate(request.form["password"])
-        new_user = User(username=name, email=email, password=password)
-        new_user.save_to_db()
-        return redirect(url_for("users.list_or_create_users"))
-    users_list = User.query.all()
-    return render_template("admin/users.html", users=users_list)
+        try:
+            if request.method == "POST":
+                name = request.form["username"]
+                email = request.form["email"]
+                password = handle_hashed_password_generate(request.form["password"])
+                new_user = User(username=name, email=email, password=password)
+                new_user.save_to_db()
+                return redirect(url_for("users.list_or_create_users"))
+        except Exception as e:
+                return jsonify({"message": str(e)}),500
+            
+        users_list = User.query.all()
+        return render_template("admin/users.html", users=users_list)
+    
 
 
-@users.route("/update/<int:user_id>", methods=["GET", "POST"])
+@users.route("/update/<int:user_id>", methods=["PUT"])
 @admin_required
 def update_user(user_id):
-    user = User.query.get_or_404(user_id)
-    if request.method == "POST":
-        user.username = request.form["username"]
-        user.email = request.form["email"]
-        user.update_db()
-        return redirect(url_for("users.list_or_create_users"))
+    try:
+        user = User.query.get_or_404(user_id)
+        if request.method == "PUT":
+            user.username = request.form["username"]
+            user.email = request.form["email"]
+            user.update_db()
+            return redirect(url_for("users.list_or_create_users"))
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
     return render_template("admin/update_user.html", user=user)
 
 
@@ -41,10 +49,10 @@ def update_user(user_id):
 def delete_user(user_id):
     try:
         user = User.query.get_or_404(user_id)
-        # user.delete_from_db()
-        return jsonify({"message": "User was deleted successfully"}), 204
+        user.delete_from_db()
+        return jsonify({"message": "User was deleted successfully"})
     except Exception as e:
-        return jsonify({"message": str(e)}), 500
+        return jsonify({"message": str(e)})
 
 
 @users.route("/login", methods=["GET", "POST"])
