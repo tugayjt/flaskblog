@@ -13,20 +13,19 @@ bcrypt = Bcrypt()
 @users.route("/", methods=["GET", "POST"])
 @admin_required
 def list_or_create_users():
-        try:
-            if request.method == "POST":
+        if request.method == "POST":
+            try:
                 name = request.form["username"]
                 email = request.form["email"]
                 password = handle_hashed_password_generate(request.form["password"])
                 new_user = User(username=name, email=email, password=password)
                 new_user.save_to_db()
                 return redirect(url_for("users.list_or_create_users"))
-        except Exception as e:
+            except Exception as e:
                 return jsonify({"message": str(e)}),500
             
         users_list = User.query.all()
         return render_template("admin/users.html", users=users_list)
-    
 
 
 @users.route("/update/<int:user_id>", methods=["PUT"])

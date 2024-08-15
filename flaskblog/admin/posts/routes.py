@@ -48,6 +48,6 @@ def delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         # post.delete_from_db()
-        return jsonify({"message": "Post deleted successfully"}), 204
+        return jsonify({"message": "Post deleted successfully"})
     except Exception as e:
         return jsonify({"message": str(e)}), 500

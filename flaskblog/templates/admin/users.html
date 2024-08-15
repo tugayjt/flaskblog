@@ -159,9 +159,9 @@
             event.preventDefault(); // Prevent the default form submission
 
             var formData = new FormData(this);
-            var userId = document.getElementById('addUserId').value;
+            
 
-            fetch('/admin/users/added/' + userId, {
+            fetch('/admin/users', {
                 method: 'POST',
                 body: formData,
             })
@@ -252,6 +252,20 @@
             removeModalBackdrops();
         });
     });
+    // Handle Night/Morning mode toggle
+    const toggleModeButton = document.getElementById('toggleMode');
+        toggleModeButton.addEventListener('click', function () {
+            const bodyElement = document.body;
+            if (bodyElement.classList.contains('night-mode')) {
+                bodyElement.classList.remove('night-mode');
+                bodyElement.classList.add('morning-mode');
+                toggleModeButton.textContent = 'Switch to Night Mode';
+            } else {
+                bodyElement.classList.remove('morning-mode');
+                bodyElement.classList.add('night-mode');
+                toggleModeButton.textContent = 'Switch to Morning Mode';
+            }
+        });
 </script>
 
 {% endblock %}
