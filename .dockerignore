@@ -1,0 +1,25 @@
+# Python bytecode
+__pycache__
+*.pyc
+*.pyo
+
+# Virtual environment
+env/
+venv/
+
+# Flask instance folder
+instance/
+
+# Migrations folder
+migrations/
+
+# Docker-related files
+Dockerfile
+.dockerignore
+
+# Git files
+.git
+.gitignore
+
+# Other files
+README.md
